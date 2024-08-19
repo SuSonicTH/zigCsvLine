@@ -20,4 +20,14 @@ pub fn build(b: *std.Build) void {
 
     const test_step = b.step("test", "Run unit tests");
     test_step.dependOn(&run_lib_unit_tests.step);
+
+    const benchmark_tests = b.addTest(.{
+        .root_source_file = b.path("src/Benchmark.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const run_benchmark_tests = b.addRunArtifact(benchmark_tests);
+
+    const benchmark_step = b.step("benchmark", "Run Benchmark");
+    benchmark_step.dependOn(&run_benchmark_tests.step);
 }
