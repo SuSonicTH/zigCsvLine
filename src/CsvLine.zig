@@ -73,7 +73,7 @@ pub const CsvLine = struct {
         return self.fields[0..index];
     }
 
-    fn start_of_quouted_string(line: []const u8, start: usize, quoute: ?u8) ?usize {
+    inline fn start_of_quouted_string(line: []const u8, start: usize, quoute: ?u8) ?usize {
         if (quoute == null) {
             return null;
         }
@@ -89,7 +89,7 @@ pub const CsvLine = struct {
         return null;
     }
 
-    fn end_of_quoted_string(line: []const u8, start: usize, quoute: u8) usize {
+    inline fn end_of_quoted_string(line: []const u8, start: usize, quoute: u8) usize {
         var pos = start;
         while (!end_of_line(line, pos) and line[pos] != quoute) {
             pos += 1;
@@ -97,18 +97,18 @@ pub const CsvLine = struct {
         return pos;
     }
 
-    fn add_field(self: *CsvLine, field: []const u8, index: usize) !void {
+    inline fn add_field(self: *CsvLine, field: []const u8, index: usize) !void {
         if (index >= self.fields.len) {
             self.fields = try self.allocator.realloc(self.fields, self.fields.len * 2);
         }
         self.fields[index] = field;
     }
 
-    fn end_of_line(line: []const u8, pos: usize) bool {
+    inline fn end_of_line(line: []const u8, pos: usize) bool {
         return pos >= line.len or line[pos] == '\r' or line[pos] == '\n';
     }
 
-    fn next_separator(line: []const u8, start: usize, separator: u8) usize {
+    inline fn next_separator(line: []const u8, start: usize, separator: u8) usize {
         var pos = start;
         while (!end_of_line(line, pos) and line[pos] != separator) {
             pos += 1;
