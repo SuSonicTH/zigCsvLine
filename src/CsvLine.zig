@@ -62,19 +62,11 @@ pub const CsvLine = struct {
             }
             last_was_separator = end < line.len and line[end] == self.options.separator;
             if (self.options.trim) {
-                while (start < end and (line[start] == ' ' or line[start] == '\t')) {
-                    start += 1;
-                }
-                while (end >= start and (line[end - 1] == ' ' or line[end - 1] == '\t')) {
-                    end -= 1;
-                }
-            }
-
-            if (start > end) {
-                try self.add_field("", index);
+                try self.add_field(std.mem.trim(u8, line[start..end], " \t"), index);
             } else {
                 try self.add_field(line[start..end], index);
             }
+
             index += 1;
         }
 
