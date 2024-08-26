@@ -17,6 +17,7 @@ pub const Options = struct {
     separator: u8 = Separator.comma,
     quoute: ?u8 = Quoute.none,
     fields: usize = 16,
+    trim: bool = false,
 };
 
 pub const ParserError = error{
@@ -60,8 +61,20 @@ pub const CsvLine = struct {
                 pos = end + 1;
             }
             last_was_separator = end < line.len and line[end] == self.options.separator;
+            if (self.options.trim) {
+                while (start < end and (line[start] == ' ' or line[start] == '\t')) {
+                    start += 1;
+                }
+                while (end >= start and (line[end - 1] == ' ' or line[end - 1] == '\t')) {
+                    end -= 1;
+                }
+            }
 
-            try self.add_field(line[start..end], index);
+            if (start > end) {
+                try self.add_field("", index);
+            } else {
+                try self.add_field(line[start..end], index);
+            }
             index += 1;
         }
 
@@ -203,4 +216,10 @@ test "quouted parsing - expect error for non closed quoute" {
     var csvLine: CsvLine = try CsvLine.init(hpa, .{ .quoute = Quoute.single });
     defer csvLine.free();
     try testing.expectError(ParserError.FoundEndOfLineAfterOpeningQuoute, csvLine.parse("'1,2,3"));
+}
+
+test "whitespace trimming" {
+    var csvLine: CsvLine = try CsvLine.init(hpa, .{ .trim = true });
+    defer csvLine.free();
+    try expectEqualStringsArray(&[_][]const u8{ "1", "2", "3", "", "", "" }, try csvLine.parse("\t1,2 , \t 3\t , ,\t,  \t \t"));
 }
